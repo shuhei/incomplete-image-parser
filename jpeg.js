@@ -24,13 +24,7 @@ function parseSegment(buffer, start) {
   if (marker[0] === 0xff) {
     switch (marker[1]) {
       case 0xda:
-        return {
-          segment: {
-            marker: segmentName(marker[1]),
-            start,
-          },
-          next: start,
-        };
+        return parseSOS(buffer, start);
       case 0xe0:
         return parseApp0(buffer, start);
       case 0xc0:
@@ -45,6 +39,41 @@ function parseSegment(buffer, start) {
       marker: 'unknown',
       start,
       data: buffer.slice(start),
+    },
+    next: start,
+  };
+}
+
+// http://lad.dsc.ufcg.edu.br/multimidia/jpegmarker.pdf
+function parseSOS(buffer, start) {
+  const headerLength = buffer.readUInt16BE(start + 2);
+  const numberOfComponents = buffer.readUInt8(start + 4);
+  const components = [];
+  for (let i = 0; i < numberOfComponents; i++) {
+    const offset = start + 5 + i * 2;
+    const [dcSelector, acSelector] = readUInt4BE(buffer, offset + 1);
+    const component = {
+      selector: buffer.readUInt8(offset),
+      dcSelector,
+      acSelector,
+    };
+    components.push(JSON.stringify(component));
+  }
+  const offset = start + 5 + numberOfComponents * 2;
+  const spectralStart = buffer.readUInt8(offset);
+  const spectralEnd = buffer.readUInt8(offset + 1);
+  const [successiveHigh, successiveLow] = readUInt4BE(buffer, offset + 2);
+  return {
+    segment: {
+      marker: segmentName(buffer.readUInt8(start + 1)),
+      start,
+      headerLength,
+      numberOfComponents,
+      components,
+      spectralStart,
+      spectralEnd,
+      successiveHigh,
+      successiveLow,
     },
     next: start,
   };
@@ -94,11 +123,8 @@ function parseSOF(buffer, start) {
   const components = [];
   for (let i = 0; i < componentsInFrame; i++) {
     const offset = start + 10 + i * 3;
-    const factors = buffer.readUInt8(offset + 1);
-    const samplingFactors = {
-      v: factors >> 4,
-      h: factors & 0b1111,
-    };
+    const [v, h] = readUInt4BE(buffer, offset + 1);
+    const samplingFactors = { v, h };
     const component = {
       id: [, 'Y', 'Cb', 'Cr', 'I', 'Q'][buffer.readUInt8(offset)] || 'unknown',
       samplingFactors,
@@ -163,4 +189,12 @@ function segmentName(marker) {
       return `unknown 0x${marker.toString(16)}`;
     }
   }
+}
+
+function readUInt4BE(buffer, start) {
+  const num = buffer.readUInt8(start);
+  return [
+    num >> 4,
+    num & 0b1111,
+  ];
 }
