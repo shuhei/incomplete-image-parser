@@ -91,6 +91,23 @@ function parseSOF(buffer, start) {
   const lines = buffer.readUInt16BE(start + 5);
   const samplesPerLine = buffer.readUInt16BE(start + 7);
   const componentsInFrame = buffer.readUInt8(start + 9);
+  const components = [];
+  for (let i = 0; i < componentsInFrame; i++) {
+    const offset = start + 10 + i * 3;
+    const factors = buffer.readUInt8(offset + 1);
+    const samplingFactors = {
+      v: factors >> 4,
+      h: factors & 0b1111,
+    };
+    const component = {
+      id: [, 'Y', 'Cb', 'Cr', 'I', 'Q'][buffer.readUInt8(offset)] || 'unknown',
+      samplingFactors,
+      quantizationTableNumber: buffer.readUInt8(offset + 2),
+    };
+    // `JSON.stringify` to show all the fields with `console.log`...
+    components.push(JSON.stringify(component));
+  }
+
   const segment = {
     marker: segmentName(marker[1]),
     start,
@@ -99,6 +116,7 @@ function parseSOF(buffer, start) {
     lines,
     samplesPerLine,
     componentsInFrame,
+    components,
   };
   return {
     segment,
