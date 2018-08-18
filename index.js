@@ -5,6 +5,7 @@ const url = require('url');
 
 const parseJpeg = require('./jpeg');
 const parseWebp = require('./webp');
+const parsePNG = require('./png');
 
 const clients = {
   'http:': http,
@@ -31,6 +32,9 @@ function readImage({ path }) {
     case 'webp':
       parser = parseWebp;
       break;
+    case 'png':
+      parser = parsePNG;
+      break;
     default:
       throw new Error(`Unsupported extension: ${ext}`);
   }
@@ -45,7 +49,7 @@ function fetchImage({ client, hostname, path }) {
     path,
     method: 'GET',
     headers: {
-      'Range': 'bytes=0-1023',
+      // 'Range': 'bytes=0-1023',
       // Akamai Image Manager sends image/webp for Chrome UA.
       'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
     },
@@ -68,6 +72,8 @@ function fetchImage({ client, hostname, path }) {
         console.log(parseJpeg(body));
       } else if (contentType.startsWith('image/webp')) {
         console.log(parseWebp(body));
+      } else if (contentType.startsWith('image/png')) {
+        console.log(parsePNG(body));
       } else {
         throw new Error(`Unsupported content type: ${contentType}`);
       }
