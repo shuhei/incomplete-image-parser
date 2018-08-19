@@ -6,6 +6,7 @@ const url = require('url');
 const parseJpeg = require('./jpeg');
 const parseWebp = require('./webp');
 const parsePNG = require('./png');
+const parseGIF = require('./gif');
 
 const clients = {
   'http:': http,
@@ -17,6 +18,7 @@ const ext2parser = {
   jpeg: parseJpeg,
   webp: parseWebp,
   png: parsePNG,
+  gif: parseGIF,
 };
 
 const imageUrl = process.argv[2];
@@ -70,6 +72,8 @@ function fetchImage({ client, hostname, path }) {
         console.log(parseWebp(body));
       } else if (contentType.startsWith('image/png')) {
         console.log(parsePNG(body));
+      } else if (contentType.startsWith('image/gif')) {
+        console.log(parseGIF(body));
       } else {
         throw new Error(`Unsupported content type: ${contentType}`);
       }

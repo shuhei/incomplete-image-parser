@@ -6,7 +6,7 @@ Incomplete image metadata parsers that I wrote to learn how metadata is stored i
 
 - [x] JPEG
 - [x] PNG
-- [ ] GIF
+- [x] GIF
 - [x] WebP
 - [ ] JPEG 2000
 
