@@ -115,6 +115,12 @@ function parseAppN(buffer, start) {
       yThumbnail,
       thumbnailData,
     });
+  } else if (identifier === 'ICC_PROFILE') {
+    Object.assign(segment, {
+      iccChunkCount: buffer.readUInt8(pos),
+      iccTotalChunks: buffer.readUInt8(pos + 1),
+      profileSize: buffer.readUInt32BE(pos + 2),
+    });
   }
   return {
     segment,
