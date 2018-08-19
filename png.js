@@ -38,11 +38,21 @@ function parseChunk(buffer, start) {
   };
 }
 
+const colorTypes = [
+  'greyscale',
+  ,
+  'truecolor',
+  'indexed-color',
+  'greyscale with alpha',
+  ,
+  'truecolor with alpha',
+];
+
 function parseIhdr(buffer, start) {
   const width = buffer.readUInt32BE(start);
   const height = buffer.readUInt32BE(start + 4);
   const bitDepth = buffer.readUInt8(start + 8);
-  const colorType = buffer.readUInt8(start + 9);
+  const colorType = colorTypes[buffer.readUInt8(start + 9)] || 'unknown';
   const compressionMethod = buffer.readUInt8(start + 10);
   const filterMethod = buffer.readUInt8(start + 11);
   const interlaceMethod = buffer.readUInt8(start + 12);
