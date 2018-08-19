@@ -47,9 +47,21 @@ function parseChunk(buffer, start) {
   };
 }
 
+const frameTypes = [
+  'key frame',
+  'interframe',
+];
+
+const scalingSpecs = [
+  'no upscaling',
+  'upscale by 5/4',
+  'upscale by 5/3',
+  'upscale by 2',
+];
+
 function parseVP8(buffer, start) {
   const num = buffer.readUInt8(start);
-  const frameType = ['key frame', 'interframe'][num >> 7] || 'unknown';
+  const frameType = frameTypes[num >> 7] || 'unknown';
   const versionNumber = (num & 0b01110000) >> 4;
   const showFrame = (num & 0b00001000) >> 3;
   const firstDataPartitionSize = ((num & 0b111) << 16) + buffer.readUInt16LE(start + 1);
@@ -57,10 +69,10 @@ function parseVP8(buffer, start) {
   console.log(buffer.slice(start + 3, start + 10));
   const w = buffer.readUInt16LE(start + 6);
   const width = w & 0x3fff;
-  const horizontalScale = w >> 14;
+  const horizontalScale = scalingSpecs[w >> 14];
   const h = buffer.readUInt16LE(start + 8);
   const height = h & 0x3fff;
-  const verticalScale = h >> 14;
+  const verticalScale = scalingSpecs[h >> 14];
   return {
     frameType,
     versionNumber,
