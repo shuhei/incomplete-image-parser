@@ -1,5 +1,6 @@
 module.exports = parsePNG;
 
+// https://www.w3.org/TR/PNG/
 function parsePNG(buffer) {
   // Ignore the 8 byte header.
   let pos = 8;
@@ -27,8 +28,31 @@ function parseChunk(buffer, start) {
     type,
     crc,
   };
+  if (type === 'IHDR') {
+    Object.assign(chunk, parseIhdr(buffer, start + 8));
+  }
+
   return {
     chunk,
     next: start + 12 + length,
+  };
+}
+
+function parseIhdr(buffer, start) {
+  const width = buffer.readUInt32BE(start);
+  const height = buffer.readUInt32BE(start + 4);
+  const bitDepth = buffer.readUInt8(start + 8);
+  const colorType = buffer.readUInt8(start + 9);
+  const compressionMethod = buffer.readUInt8(start + 10);
+  const filterMethod = buffer.readUInt8(start + 11);
+  const interlaceMethod = buffer.readUInt8(start + 12);
+  return {
+    width,
+    height,
+    bitDepth,
+    colorType,
+    compressionMethod,
+    filterMethod,
+    interlaceMethod,
   };
 }
