@@ -12,6 +12,13 @@ const clients = {
   'https:': https,
 };
 
+const ext2parser = {
+  jpg: parseJpeg,
+  jpeg: parseJpeg,
+  webp: parseWebp,
+  png: parsePNG,
+};
+
 const imageUrl = process.argv[2];
 const { protocol, hostname, path } = url.parse(imageUrl);
 const client = clients[protocol];
@@ -23,19 +30,8 @@ if (client) {
 
 function readImage({ path }) {
   const ext = path.split('.').pop();
-  let parer;
-  switch (ext) {
-    case 'jpg':
-    case 'jpeg':
-      parser = parseJpeg;
-      break;
-    case 'webp':
-      parser = parseWebp;
-      break;
-    case 'png':
-      parser = parsePNG;
-      break;
-    default:
+  const parser = ext2parser[ext];
+  if (!parser) {
       throw new Error(`Unsupported extension: ${ext}`);
   }
 

@@ -66,7 +66,6 @@ function parseVP8(buffer, start) {
   const showFrame = (num & 0b00001000) >> 3;
   const firstDataPartitionSize = ((num & 0b111) << 16) + buffer.readUInt16LE(start + 1);
   // Ignore 3-6: 0x9d 0x01 0x2a
-  console.log(buffer.slice(start + 3, start + 10));
   const w = buffer.readUInt16LE(start + 6);
   const width = w & 0x3fff;
   const horizontalScale = scalingSpecs[w >> 14];
