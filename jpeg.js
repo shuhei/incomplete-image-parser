@@ -25,13 +25,15 @@ function parseSegment(buffer, start) {
     switch (marker[1]) {
       case 0xda:
         return parseSOS(buffer, start);
-      case 0xe0:
-        return parseApp0(buffer, start);
       case 0xc0:
       case 0xc2:
         return parseSOF(buffer, start);
       default:
-        return parseOtherSegment(buffer, start);
+        if (0xe0 <= marker[1] && marker[1] < 0xf0) {
+          return parseAppN(buffer, start);
+        } else {
+          return parseOtherSegment(buffer, start);
+        }
     }
   }
   return {
@@ -79,34 +81,38 @@ function parseSOS(buffer, start) {
   };
 }
 
-function parseApp0(buffer, start) {
+function parseAppN(buffer, start) {
+  const marker = buffer.slice(start, start + 2);
   const length = buffer.readUInt16BE(start + 2);
   const identifier = buffer.slice(start + 4, start + 9).toString('utf8');
-  const jfifVersionMajor = buffer.readUInt8(start + 9);
-  const jfifVersionMinor = buffer.readUInt8(start + 10);
-  const densityUnits = ['no units', 'pixels per inch', 'pixels per cm'][buffer.readUInt8(start + 11)] || 'unknown';
-  const xDensity = buffer.readUInt16BE(start + 12);
-  const yDensity = buffer.readUInt16BE(start + 14);
-  const xThumbnail = buffer.readUInt8(start + 16);
-  const yThumbnail = buffer.readUInt8(start + 17);
   const next = start + 2 + length;
-  const thumbnailData = buffer.slice(start + 18, next);
 
   const segment = {
-    marker: 'app0',
+    marker: segmentName(marker[1]),
     start,
     length,
     identifier,
-    jfifVersionMajor,
-    jfifVersionMinor,
-    densityUnits,
-    xDensity,
-    yDensity,
-    xThumbnail,
-    yThumbnail,
-    thumbnailData,
   };
-
+  if (identifier === 'JFIF\u0000') {
+    const jfifVersionMajor = buffer.readUInt8(start + 9);
+    const jfifVersionMinor = buffer.readUInt8(start + 10);
+    const densityUnits = ['no units', 'pixels per inch', 'pixels per cm'][buffer.readUInt8(start + 11)] || 'unknown';
+    const xDensity = buffer.readUInt16BE(start + 12);
+    const yDensity = buffer.readUInt16BE(start + 14);
+    const xThumbnail = buffer.readUInt8(start + 16);
+    const yThumbnail = buffer.readUInt8(start + 17);
+    const thumbnailData = buffer.slice(start + 18, next);
+    Object.assign(segment, {
+      jfifVersionMajor,
+      jfifVersionMinor,
+      densityUnits,
+      xDensity,
+      yDensity,
+      xThumbnail,
+      yThumbnail,
+      thumbnailData,
+    });
+  }
   return {
     segment,
     next,
