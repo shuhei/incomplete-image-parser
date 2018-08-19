@@ -84,7 +84,10 @@ function parseSOS(buffer, start) {
 function parseAppN(buffer, start) {
   const marker = buffer.slice(start, start + 2);
   const length = buffer.readUInt16BE(start + 2);
-  const identifier = buffer.slice(start + 4, start + 9).toString('utf8');
+  const {
+    result: identifier,
+    next: pos,
+  } = readNullTerminatedString(buffer, start + 4);
   const next = start + 2 + length;
 
   const segment = {
@@ -93,15 +96,15 @@ function parseAppN(buffer, start) {
     length,
     identifier,
   };
-  if (identifier === 'JFIF\u0000') {
-    const jfifVersionMajor = buffer.readUInt8(start + 9);
-    const jfifVersionMinor = buffer.readUInt8(start + 10);
-    const densityUnits = ['no units', 'pixels per inch', 'pixels per cm'][buffer.readUInt8(start + 11)] || 'unknown';
-    const xDensity = buffer.readUInt16BE(start + 12);
-    const yDensity = buffer.readUInt16BE(start + 14);
-    const xThumbnail = buffer.readUInt8(start + 16);
-    const yThumbnail = buffer.readUInt8(start + 17);
-    const thumbnailData = buffer.slice(start + 18, next);
+  if (identifier === 'JFIF') {
+    const jfifVersionMajor = buffer.readUInt8(pos);
+    const jfifVersionMinor = buffer.readUInt8(pos + 1);
+    const densityUnits = ['no units', 'pixels per inch', 'pixels per cm'][buffer.readUInt8(pos + 2)] || 'unknown';
+    const xDensity = buffer.readUInt16BE(pos + 3);
+    const yDensity = buffer.readUInt16BE(pos + 5);
+    const xThumbnail = buffer.readUInt8(pos + 7);
+    const yThumbnail = buffer.readUInt8(pos + 8);
+    const thumbnailData = buffer.slice(pos + 9, next);
     Object.assign(segment, {
       jfifVersionMajor,
       jfifVersionMinor,
@@ -203,4 +206,22 @@ function readUInt4BE(buffer, start) {
     num >> 4,
     num & 0b1111,
   ];
+}
+
+function readNullTerminatedString(buffer, start) {
+  let pos = start;
+  while (buffer[pos] > 0 && pos < buffer.length) {
+    pos++;
+  }
+  if (pos === buffer.length) {
+    return {
+      result: null,
+      next: start,
+    };
+  } else {
+    return {
+      result: buffer.slice(start, pos).toString('utf8'),
+      next: pos + 1,
+    };
+  }
 }
