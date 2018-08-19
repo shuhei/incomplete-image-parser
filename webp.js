@@ -28,6 +28,8 @@ function parseChunk(buffer, start) {
   };
   if (fourCC === 'VP8X') {
     Object.assign(chunk, parseVP8X(buffer, start + 8));
+  } else if (fourCC === 'VP8 ') {
+    Object.assign(chunk, parseVP8(buffer, start + 8));
   }
 
   let next;
@@ -42,6 +44,32 @@ function parseChunk(buffer, start) {
   return {
     chunk,
     next,
+  };
+}
+
+function parseVP8(buffer, start) {
+  const num = buffer.readUInt8(start);
+  const frameType = ['key frame', 'interframe'][num >> 7] || 'unknown';
+  const versionNumber = (num & 0b01110000) >> 4;
+  const showFrame = (num & 0b00001000) >> 3;
+  const firstDataPartitionSize = ((num & 0b111) << 16) + buffer.readUInt16LE(start + 1);
+  // Ignore 3-6: 0x9d 0x01 0x2a
+  console.log(buffer.slice(start + 3, start + 10));
+  const w = buffer.readUInt16LE(start + 6);
+  const width = w & 0x3fff;
+  const horizontalScale = w >> 14;
+  const h = buffer.readUInt16LE(start + 8);
+  const height = h & 0x3fff;
+  const verticalScale = h >> 14;
+  return {
+    frameType,
+    versionNumber,
+    showFrame,
+    firstDataPartitionSize,
+    width,
+    height,
+    horizontalScale,
+    verticalScale,
   };
 }
 
