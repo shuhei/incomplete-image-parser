@@ -24,6 +24,7 @@ function parseChunk(buffer, start) {
   const crc = buffer.readUInt32BE(start + 8 + length).toString(16);
 
   const chunk = {
+    start,
     length,
     type,
     crc,
