@@ -1,6 +1,6 @@
 {
   "name": "@shuhei/incomplete-image-parser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An incomplete image parser that can be use to peek into binary data of image files",
   "main": "index.js",
   "scripts": {
