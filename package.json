@@ -1,0 +1,22 @@
+{
+  "name": "@shuhei/incomplete-image-parser",
+  "version": "0.0.1",
+  "description": "An incomplete image parser that can be use to peek into binary data of image files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuhei/incomplete-image-parser.git"
+  },
+  "keywords": [
+    "image"
+  ],
+  "author": "Shuhei Kagawa <shuhei.kagawa@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shuhei/incomplete-image-parser/issues"
+  },
+  "homepage": "https://github.com/shuhei/incomplete-image-parser#readme"
+}
