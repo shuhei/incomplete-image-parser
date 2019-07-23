@@ -21,5 +21,8 @@
   "homepage": "https://github.com/shuhei/incomplete-image-parser#readme",
   "bin": {
     "iip": "./index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
