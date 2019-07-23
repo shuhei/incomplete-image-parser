@@ -66,6 +66,12 @@ function fetchImage({ client, hostname, path }) {
     });
     res.on('end', () => {
       const body = Buffer.concat(chunks);
+
+      const contentLength = parseInt(res.headers['content-length'], 10);
+      if (Number.isNaN(contentLength)) {
+        console.log({ bodySize: body.length });
+      }
+
       const contentType = res.headers['content-type'] || '';
       if (contentType.startsWith('image/jpeg')) {
         console.log(parseJpeg(body));
