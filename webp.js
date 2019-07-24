@@ -98,7 +98,7 @@ function parseVP8X(buffer, start) {
 }
 
 function checkFlag(num, bit) {
-  const mask= 1 << bit;
+  const mask = 1 << bit;
   const flag = (num & mask) >> bit;
   return flag === 1;
 }

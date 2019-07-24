@@ -121,6 +121,30 @@ function parseAppN(buffer, start) {
       iccTotalChunks: buffer.readUInt8(pos + 1),
       profileSize: buffer.readUInt32BE(pos + 2),
     });
+  } else if (identifier === 'Photoshop 3.0') {
+    // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
+    const signature = buffer.slice(pos, pos + 4).toString('utf8');
+    Object.assign(segment, {
+      signature,
+    });
+    if (signature === '8BIM') { // Image Resource Block
+      // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_38034
+      // 1028 -> IPTC-NAA record (File Info)
+      const resourceId = buffer.readUInt16BE(pos + 4);
+			const {
+				result: resourceBlockName,
+				next: startOfSize
+			} = readPascalString(buffer, pos + 6);
+      const resourceBlockSize = buffer.readUInt32BE(startOfSize);
+      // TODO: Parse IPTC payload
+      const resourceBlockPayload = buffer.slice(startOfSize + 4, startOfSize + 4 + resourceBlockSize);
+      Object.assign(segment, {
+        resourceId,
+				resourceBlockName,
+        resourceBlockSize,
+        resourceBlockPayload,
+      });
+    }
   }
   return {
     segment,
@@ -230,4 +254,16 @@ function readNullTerminatedString(buffer, start) {
       next: pos + 1,
     };
   }
+}
+
+// For Photoshop metadata https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
+// - The first byte represents the length
+// - Padded to make the size even (a null name consists of two bytes of 0)
+function readPascalString(buffer, start) {
+	const length = buffer.readUInt8(start);
+	const next = start + 1 + length + (length % 2 === 0 ? 1 : 0);
+	return {
+		result: buffer.slice(start + 1, start + 1 + length).toString('utf8'),
+		next
+	};
 }
