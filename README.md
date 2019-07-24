@@ -14,14 +14,19 @@ Note that implementations are incomplete even if they have checkmarks here!
 
 ## Usage
 
-Via HTTP(S) - Image format is chosen by the `Content-Type` header:
+```sh
+# Given you have Node.js
+npm install -g @shuhei/incomplete-image-parser
+```
+
+Via HTTP(S) with `User-Agent` header of Chrome 68 (for now) - Image format is chosen by the `Content-Type` header:
 
 ```sh
-node index.js https://foo.com/bar.jpg
+iip https://foo.com/bar.jpg
 ```
 
 Via file system - Image format is chosen by the file extension:
 
 ```sh
-node index.js ./foo.webp
+iip ./foo.webp
 ```
